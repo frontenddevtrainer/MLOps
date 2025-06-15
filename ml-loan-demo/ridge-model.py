@@ -11,13 +11,10 @@ parser.add_argument("--data", type=str, default = "ml-loan-demo/raw_data.csv")
 
 args = parser.parse_args()
 
-# mlflow.set_tracking_uri("http://localhost:5000")
-
 with mlflow.start_run():
 
     df = pd.read_csv(args.data)
     df_clean = df.dropna()
-    mlflow.log_metric("rows_after_clean", len(df_clean))
     df_clean.to_csv("ml-loan-demo/cleaned_data.csv", index=False)
 
     X = df_clean[["x"]]
@@ -25,12 +22,12 @@ with mlflow.start_run():
     model = Ridge(alpha=args.alpha)
     model.fit(X, Y)
 
-    mlflow.log_param("alpha", args.alpha)
-    mlflow.log_metric("r2_score", model.score(X, Y))
-
     mlflow.sklearn.log_model(
         model,
-        name="ridge-model",
+        name="model",
         input_example=X.head(1),
         signature=infer_signature(X, Y)
     )
+
+    # mlflow.log_artifact('ml-loan-demo/raw_data.csv')
+    # mlflow.log_artifact("ml-loan-demo/cleaned_data.csv")
